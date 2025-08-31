@@ -33,6 +33,12 @@ if __name__ == "__main__":
     else:
         q = input("Enter search term [e.g., a barcode]: ")
 
+    # Search Google, retrieve a list of results
     items = gsearch.google_advanced_search(q, num_results=10,
                                            lang="en", region="us", safe=None)
-    print(llm.product_name(items))
+
+    # Query the LLM to interpret them, and print the outcome
+    product_name = llm.product_name(items)
+    product_name_noqty = llm.product_name_noqty(product_name)
+    print(product_name)
+    print(product_name_noqty)

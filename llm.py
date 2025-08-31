@@ -12,17 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
+from langchain_ollama import OllamaLLM
+
+
 MODEL = "gemma3:4b"
-PROMPT = \
+PROMPT_NAME = \
     ("The following is a list of Google search results for a specific"
      " product. Each result is a tuple (URL, title, snippet), one tuple for"
      " each page. Based on these results, give your best guess for the product"
      " name. Follow these rules:\n\n"
      "* Make the product name as detailed as possible.\n"
      "* DO NOT INCLUDE any information on the actual packaging.\n"
-     "* DO NOT INCLUDE any information on package weight, e.g., grams.\n"
+     "* DO NOT INCLUDE any information on quantity / package weight,"
+     " e.g., grams.\n"
      "* DO NOT INCLUDE any information on pack size.\n"
-     "* DO NOT INCLUDE any information on bottle volume, e.g., ml.\n"
+     "* DO NOT INCLUDE any information on quantity / bottle volume / package"
+     " volume, e.g., ml.\n"
      "* DO include information on active ingredient content, or alcohol"
      " content."
      "* DO NOT make up product names if you don't have enough information."
@@ -33,10 +40,21 @@ PROMPT = \
      " Here is the list of results:\n\n")
 
 
+PROMPT_NOQTY = \
+    ("Read this product description and decide whether it contains any"
+     " reference to package weight (for example, in grams), or volume (for"
+     " example in liters). If it does, return the exact same description"
+     " but without any such references. The product description is:\n")
+
+
+log = logging.getLogger(__name__)
+
+
 def query_llm(prompt):
     """Query an LLM served by Ollama and return its response as a string."""
-    from langchain_ollama import OllamaLLM
     llm = OllamaLLM(model=MODEL)
+
+    log.debug("Querying LLM: %s\n", prompt)
 
     chunks = []
     for chunk in llm.stream(prompt):
@@ -45,18 +63,20 @@ def query_llm(prompt):
 
 
 def product_name(results):
-    """Query an LLM with a specific prompt to retrieve a product name."""
+    """Query LLM to retrieve a product name."""
     results_str = "\n".join(("* URL: %s\n"
                              "  Title: %s\n"
                              "  Description: %s\n") %
                             (res["url"], res["title"], res["desc"])
                             for res in results)
 
-    prompt = PROMPT + results_str
+    prompt = PROMPT_NAME + results_str
+    return query_llm(prompt)
 
-    print(prompt)
-    print("\n\n*********\n\n")
 
+def product_name_noqty(product_name):
+    """Query LLM to clean up product name and remove any references to qty."""
+    prompt = PROMPT_NOQTY + product_name
     return query_llm(prompt)
 
 
