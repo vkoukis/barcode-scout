@@ -1,3 +1,4 @@
+
 # Copyright © 2025 Vangelis Koukis <vkoukis@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import logging
 
-import llm
-import gsearch
-import logutils
+import logging
 
 log = logging.getLogger(__name__)
 
 
+def setup_logging(level=logging.INFO):
+    """Setup basic loggging."""
+    logging.basicConfig(level=level,
+                        format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+def test_logging():
+    """Log basic messages at different log levels."""
+    log.info("This is an info message.")
+    log.warning("This is a warning message.")
+    log.error("This is an error message.")
+    log.debug("This is a debug message.")
+
+
 if __name__ == "__main__":
-    logutils.setup_logging(logging.DEBUG)
-
-    if len(sys.argv) > 1:
-        if len(sys.argv) != 2:
-            msg = "Zero or one command-line arguments expected."
-            raise RuntimeError(msg)
-        q = sys.argv[1]
-    else:
-        q = input("Enter search term [e.g., a barcode]: ")
-
-    items = gsearch.google_advanced_search(q, num_results=10,
-                                           lang="en", region="us", safe=None)
-    print(llm.product_name(items))
+    setup_logging(logging.DEBUG)
+    test_logging()

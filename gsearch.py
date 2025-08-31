@@ -12,9 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from xdg.BaseDirectory import save_cache_path
+
 from googlesearch import search
+from lru_cache import lru_cache_to_file
+
+CACHE_DIR_SUBPATH = os.path.join("barcode-scout", __name__)
+CACHE_DIR = save_cache_path(CACHE_DIR_SUBPATH)
 
 
+@lru_cache_to_file(cache_dir=CACHE_DIR)
 def google_advanced_search(query, num_results=10, lang="en", region="us",
                            safe="active"):
     """
